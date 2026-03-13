@@ -70,6 +70,7 @@ const DustViewer = () => {
             ver: '1.0'
           }
         });
+		
         const items = response.data.response.body.items;
         if (items) setDustData(items);
       } catch (e) {

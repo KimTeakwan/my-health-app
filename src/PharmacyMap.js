@@ -53,7 +53,6 @@ const PharmacyMap = () => {
   const fetchPharmacy = useCallback(async () => {
     setLoading(true);
     setSelectedDong('전체');
-    
     try {
       const url = 'https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyListInfoInqire';
       const response = await axios.get(url, {

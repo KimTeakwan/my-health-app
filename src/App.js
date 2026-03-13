@@ -64,7 +64,6 @@ const Content = styled.div`
 
 function App() {
   const [menu, setMenu] = useState('dust');
-
   return (
     <Background>
       <Container>
