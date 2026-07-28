@@ -26,6 +26,28 @@ const ListItem = styled.li` display: flex; justify-content: space-between; align
 const Info = styled.div` h3 { margin: 0 0 5px 0; font-size: 18px; color: #333; } p { margin: 0; color: #888; font-size: 14px; } `;
 const Badge = styled.span` background-color: #ffecec; color: #ff4757; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; `;
 
+// 영업 상태를 계산하는 헬퍼 함수
+const checkIsOpen = (item) => {
+  const now = new Date();
+  const day = now.getDay(); // 0: 일요일, 1: 월요일 ... 6: 토요일
+  
+  // API의 요일 인덱스에 맞게 변환 (API는 1:월 ~ 7:일)
+  const apiDayIndex = day === 0 ? 7 : day; 
+  
+  const startTime = item[`dutyTime${apiDayIndex}s`];
+  const closeTime = item[`dutyTime${apiDayIndex}c`];
+
+  // 해당 요일에 운영 시간이 없으면 휴무
+  if (!startTime || !closeTime) return false;
+
+  const currentHourMinute = 
+    String(now.getHours()).padStart(2, '0') + 
+    String(now.getMinutes()).padStart(2, '0');
+
+  // 현재 시간이 오픈 시간과 종료 시간 사이인지 확인
+  return currentHourMinute >= startTime && currentHourMinute <= closeTime;
+};
+
 const PharmacyMap = () => {
   const [allPharmacies, setAllPharmacies] = useState([]);
   const [filteredPharmacies, setFilteredPharmacies] = useState([]);
@@ -131,16 +153,25 @@ const PharmacyMap = () => {
       
       {loading ? <p>약국 데이터 분석 중... 🧩</p> : (
         <ListContainer>
-          {filteredPharmacies.length > 0 ? filteredPharmacies.map((item, index) => (
-            <ListItem key={index}>
-              <Info>
-                <h3>{item.dutyName}</h3>
-                <p>📍 {item.dutyAddr}</p>
-                <p style={{marginTop: '5px'}}>📞 {item.dutyTel1}</p>
-              </Info>
-              <Badge>영업중</Badge>
-            </ListItem>
-          )) : <p style={{marginTop: '20px', color:'#999'}}>데이터가 없습니다.</p>}
+          {filteredPharmacies.length > 0 ? filteredPharmacies.map((item, index) => {
+            const isOpen = checkIsOpen(item); // 실시간 영업 상태 계산
+            
+            return (
+              <ListItem key={index}>
+                <Info>
+                  <h3>{item.dutyName}</h3>
+                  <p>📍 {item.dutyAddr}</p>
+                  <p style={{marginTop: '5px'}}>📞 {item.dutyTel1}</p>
+                </Info>
+                <Badge style={{ 
+                  backgroundColor: isOpen ? '#e3f2fd' : '#ffecec', 
+                  color: isOpen ? '#4A90E2' : '#ff4757' 
+                }}>
+                  {isOpen ? '영업중' : '영업종료'}
+                </Badge>
+              </ListItem>
+            );
+          }) : <p style={{marginTop: '20px', color:'#999'}}>데이터가 없습니다.</p>}
         </ListContainer>
       )}
     </div>
